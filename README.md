@@ -8,14 +8,14 @@ import DataTable, { registerType } from 'semantic-react-datatable'
 registerType("romanNumeral", {
   compare: (valA, valB) => romanToInt(valA) - romanToInt(valB),
   alignment: "center",
-  format: (val) => <b>val</b>
+  format: (val) => <b>{val}</b>
 });
 
 const columns = [
   {
     name: 'ID',
     selector: row => row.id,
-    type: 'string',
+    type: 'number',
   },
   {
     name: 'Name',
@@ -54,17 +54,18 @@ const students = [
         grade: 'VII'        
     }
 ]
-function StudentList() {
+
+function StudentTable() {
   return (
     <DataTable
       columns={columns}
-      data={c}
+      data={students}
       rows={10}
     />
   )
 }
 
-export default StudentList;
+export default StudentTable;
 
 const romanToInt = (roman) => {
     function char_to_int(c){
