@@ -23,13 +23,52 @@ const sortFunc = ({selector, type}) => {
         types[type].compare(selector(rowA), selector(rowB));
 }
 
-function DataTable({ columns, data, rows }) {
+const Pagination = ({paginate, colSpan, numPages, setPage, page}) => {
+    if (paginate) {
+        return <Table.Footer>
+            <Table.Row>
+                <Table.HeaderCell colSpan={colSpan}>
+                <Menu floated='right' pagination>
+                    <Menu.Item as='a' icon>
+                        <Icon name='chevron left' 
+                            disabled={page === 0} 
+                            onClick={() => setPage(page - 1)}
+                        />
+                    </Menu.Item>
+                    {[...Array(numPages)].map((ignore, pageNum) => (
+                        <Menu.Item 
+                            as='a' 
+                            key={pageNum}
+                            disabled={pageNum === page}
+                            onClick={() => setPage(pageNum)}>
+                            {1 + pageNum}
+                        </Menu.Item>
+                    ))}
+                    <Menu.Item as='a' icon>
+                        <Icon name='chevron right' 
+                            disabled={page === numPages - 1} 
+                            onClick={() => setPage(page + 1)}
+                        />
+                    </Menu.Item>
+                </Menu>
+                </Table.HeaderCell>
+            </Table.Row>
+        </Table.Footer>
+    } else {
+        return <></>;
+    }
+}
+
+function DataTable({ columns, data, rows, disablePagination }) {
     const [sortCol, setSortCol] = useState(-1);
     const [sortDir, setSortDir] = useState('asc');
     const [view, setView] = useState(data);
     const [page, setPage] = useState(0);
 
     const numRows = rows ? rows : 10;
+
+    const paginate = disablePagination ? false: true;
+
     const numPages = data.length === 0 ? 1 : Math.ceil(data.length / numRows);
 
     useEffect(() => {
@@ -40,9 +79,13 @@ function DataTable({ columns, data, rows }) {
                 newView.reverse();
             }
         }
-        const pageView = newView.slice(page * numRows, (page + 1) * numRows);
-        setView(pageView);
-    },[columns, data, numRows, sortCol, sortDir, page] )
+        if (paginate) {
+            const pageView = newView.slice(page * numRows, (page + 1) * numRows);
+            setView(pageView);
+        } else {
+            setView(newView);
+        }
+    },[columns, data, numRows, sortCol, sortDir, page, paginate] )
 
     const columnClick = (col, index) => {
         if (sortCol === index) {
@@ -95,35 +138,13 @@ function DataTable({ columns, data, rows }) {
             )}
         </Table.Body>
 
-        <Table.Footer>
-            <Table.Row>
-                <Table.HeaderCell colSpan={columns.length}>
-                <Menu floated='right' pagination>
-                    <Menu.Item as='a' icon>
-                        <Icon name='chevron left' 
-                            disabled={page === 0} 
-                            onClick={() => setPage(page - 1)}
-                        />
-                    </Menu.Item>
-                    {[...Array(numPages)].map((ignore, pageNum) => (
-                        <Menu.Item 
-                            as='a' 
-                            key={pageNum}
-                            disabled={pageNum === page}
-                            onClick={() => setPage(pageNum)}>
-                            {1 + pageNum}
-                        </Menu.Item>
-                    ))}
-                    <Menu.Item as='a' icon>
-                        <Icon name='chevron right' 
-                            disabled={page === numPages - 1} 
-                            onClick={() => setPage(page + 1)}
-                        />
-                    </Menu.Item>
-                </Menu>
-                </Table.HeaderCell>
-            </Table.Row>
-        </Table.Footer>
+        <Pagination colSpan={columns.length}
+            paginate={paginate} 
+            numPages={numPages}
+            setPage={setPage}
+            page={page}
+         />
+        
     </Table>
 
 }
