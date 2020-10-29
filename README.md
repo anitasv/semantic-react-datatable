@@ -1,15 +1,47 @@
 # semantic-react-datatable
 Datatable that can be used with Semantic React UI libraries. 
 
+Sample Usage - StudentTable.jsx:
 ```jsx
 import React from 'react'
-import DataTable, { registerType } from './DataTable'
+import DataTable, { registerType } from 'semantic-react-datatable'
 
+export default function StudentTable() {
+  return (
+    <DataTable
+      columns={columns}
+      data={students}
+      rows={4}
+      disablePagination={true}
+      enableSearch={true}
+    />
+  )
+}
+
+// By default DataTable supports only two types 'string' and 'number',
+// but you can define your own custom types. 
 registerType("romanNumeral", {
+  
   compare: (valA, valB) => romanToInt(valA) - romanToInt(valB),
+  // string - by default compared on locale settings, case sensitive sorting.
+  // number - natural number sorting.
+  // This Roman letter comparison is not production quality, so treat this only
+  // as an example!
+
   alignment: "center",
+  // string - by default left aligned.
+  // number - by default right aligned.
+
   format: (val) => <b>{val}</b>,
+  // format: defines formatting of contents of table cell, can be any react component or text.
+  // string - by default displated as text component without any additional styling.
+  // number - by default uses locale sensitive commas - 1,000,000 for example. 
+
   text: (val) => val
+  // text field is purely to support Search functionality, search will match a row if 
+  // at least one of the column's text matches the search token. 
+  // string - kept as is.
+  // number - using simple decimal notation without commas so that searching is more user friendly.
 });
 
 const columns = [
@@ -74,19 +106,6 @@ const students = [
     },
 ]
 
-function StudentTable() {
-  return (
-    <DataTable
-      columns={columns}
-      data={students}
-      rows={4}
-      disablePagination={true}
-      enableSearch={true}
-    />
-  )
-}
-
-export default StudentTable;
 
 const romanToInt = (roman) => {
     function char_to_int(c){

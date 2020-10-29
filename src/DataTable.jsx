@@ -9,7 +9,7 @@ const types = {
         text: (val) => val
     },
     "number": {
-        compare: (valA, valB) => valA - valB,
+        compare: (valA, valB) => valA === valB ? 0 : (valA < valB ? -1 : +1),
         alignment: "right",
         format: (val) => val.toLocaleString(),
         text: (val) => '' + val
