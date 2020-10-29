@@ -107,9 +107,7 @@ function DataTable({ columns, data, rows, disablePagination, enableSearch }) {
                 return input;
             } else {
                 const searchLower = searchKey.toLowerCase();
-
                 return input.filter((row) => {
-
                     for (const col of columns) {
                         const text = cellText(row, col);
                         const loc = text.toLowerCase().indexOf(searchLower);
