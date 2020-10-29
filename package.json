@@ -1,6 +1,6 @@
 {
     "name": "semantic-react-datatable",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "Datatable that can be used with Semantic React UI libraries",
     "main": "./lib/DataTable.js",
     "license": "(ISC or MIT)",
