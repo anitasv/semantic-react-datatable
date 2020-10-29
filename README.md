@@ -3,12 +3,13 @@ Datatable that can be used with Semantic React UI libraries.
 
 ```jsx
 import React from 'react'
-import DataTable, { registerType } from 'semantic-react-datatable'
+import DataTable, { registerType } from './DataTable'
 
 registerType("romanNumeral", {
   compare: (valA, valB) => romanToInt(valA) - romanToInt(valB),
   alignment: "center",
-  format: (val) => <b>{val}</b>
+  format: (val) => <b>{val}</b>,
+  text: (val) => val
 });
 
 const columns = [
@@ -52,7 +53,25 @@ const students = [
         name: 'Harry',
         age: 13,
         grade: 'VII'        
-    }
+    },
+    {
+      id: 4,
+      name: 'Jerry',
+      age: 11,
+      grade: 'X'        
+    }, 
+    {
+        id: 5,
+        name: 'Rick',
+        age: 12,
+        grade: 'XI'        
+    },
+    {
+        id: 6,
+        name: 'Morty',
+        age: 13,
+        grade: 'VI'        
+    },
 ]
 
 function StudentTable() {
@@ -60,7 +79,9 @@ function StudentTable() {
     <DataTable
       columns={columns}
       data={students}
-      rows={10}
+      rows={4}
+      disablePagination={true}
+      enableSearch={true}
     />
   )
 }

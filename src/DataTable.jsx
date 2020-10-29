@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, Icon, Table } from 'semantic-ui-react'
+import { Input, Menu, Icon, Table } from 'semantic-ui-react'
 
 const types = {
     "string": {
         compare: (valA, valB) => valA.localeCompare(valB),
         alignment: "left",
-        format: (val) => val
+        format: (val) => val,
+        text: (val) => val
     },
     "number": {
         compare: (valA, valB) => valA - valB,
         alignment: "right",
-        format: (val) => val.toLocaleString()
+        format: (val) => val.toLocaleString(),
+        text: (val) => '' + val
     }
 }
 
@@ -59,11 +61,27 @@ const Pagination = ({paginate, colSpan, numPages, setPage, page}) => {
     }
 }
 
-function DataTable({ columns, data, rows, disablePagination }) {
+const cellComponent = (row, {selector, type}) => 
+    types[type].format(selector(row));
+
+const cellText = (row, {selector, type}) => {
+    const val = selector(row);
+    const textFn = types[type].text;
+    if (textFn) {
+        return textFn(val);
+    } else {
+        return '' + val;
+    }
+}
+
+const alignment = ({type}) => types[type].alignment;
+
+function DataTable({ columns, data, rows, disablePagination, enableSearch }) {
     const [sortCol, setSortCol] = useState(-1);
     const [sortDir, setSortDir] = useState('asc');
     const [view, setView] = useState(data);
     const [page, setPage] = useState(0);
+    const [searchKey, setSearchKey] = useState("");
 
     const numRows = rows ? rows : 10;
 
@@ -72,20 +90,47 @@ function DataTable({ columns, data, rows, disablePagination }) {
     const numPages = data.length === 0 ? 1 : Math.ceil(data.length / numRows);
 
     useEffect(() => {
-        const newView = [...data];
-        if (sortCol !== -1) {
-            newView.sort(sortFunc(columns[sortCol]));
-            if (sortDir !== 'asc') {
-                newView.reverse();
+        const sortView = (input) => {
+            if (sortCol !== -1) {
+                const newView = [...input];
+                newView.sort(sortFunc(columns[sortCol]));
+                if (sortDir !== 'asc') {
+                    newView.reverse();
+                }
+                return newView;
+            } else {
+                return input;
             }
         }
-        if (paginate) {
-            const pageView = newView.slice(page * numRows, (page + 1) * numRows);
-            setView(pageView);
-        } else {
-            setView(newView);
+        const searchView = (input) => {
+            if (searchKey === '') {
+                return input;
+            } else {
+                const searchLower = searchKey.toLowerCase();
+
+                return input.filter((row) => {
+
+                    for (const col of columns) {
+                        const text = cellText(row, col);
+                        const loc = text.toLowerCase().indexOf(searchLower);
+                        if (loc !== -1) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+            }
         }
-    },[columns, data, numRows, sortCol, sortDir, page, paginate] )
+        const pageView = (input) => {
+            if (paginate) {
+                return input.slice(page * numRows, (page + 1) * numRows);
+            } else {
+                return input;
+            }
+        }
+
+        setView(pageView(searchView(sortView(data))));
+    },[columns, data, numRows, sortCol, sortDir, page, paginate, searchKey])
 
     const columnClick = (col, index) => {
         if (sortCol === index) {
@@ -108,15 +153,22 @@ function DataTable({ columns, data, rows, disablePagination }) {
         }
     }
 
-    const cellValue = (row, {selector, type}) => 
-        types[type].format(selector(row));
-
-    const alignment = ({type}) => 
-        types[type].alignment;
+    const handleSearchChange = (event, target) => {
+        setSearchKey(target.value);
+    };
 
     return <Table celled>
         <Table.Header>
-            <Table.Row>
+            {enableSearch && (<Table.Row >
+                <Table.HeaderCell textAlign="right" colSpan={columns.length} >
+                    <Input
+                        icon={<Icon name='search' circular link />}
+                        onChange={handleSearchChange}
+                        style={{borderRadius: '100px'}} 
+                    />
+                </Table.HeaderCell>
+            </Table.Row>)}
+        <Table.Row>
                 {columns.map((col, index) => (
                     <Table.HeaderCell key={index} 
                         onClick={() => columnClick(col, index)}>
@@ -131,7 +183,7 @@ function DataTable({ columns, data, rows, disablePagination }) {
                 <Table.Row key={row.id}>
                     {columns.map((col, index) => (
                         <Table.Cell key={index} textAlign={alignment(col)}>
-                            {cellValue(row, col)}
+                            {cellComponent(row, col)}
                         </Table.Cell>
                     ))}
                 </Table.Row>
